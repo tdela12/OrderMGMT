@@ -12,15 +12,10 @@ conn = psycopg2.connect(
     port = 5432,
 )
 
-def add_product():
-    commands = ("""
-        INSERT INTO products 
-        """
-       )
+def execute_query(query):
     try:
         with conn.cursor() as cur:
-            for command in commands:
-                cur.execute(command)
+            cur.execute(query)
         conn.commit()
 
     except psycopg2.DatabaseError as e:
@@ -30,3 +25,4 @@ def add_product():
     finally:
         if conn:
             conn.close()
+
