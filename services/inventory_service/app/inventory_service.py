@@ -1,5 +1,3 @@
-import sys
-
 from database.app.inventory_operations import *
 
 # Update inventory
@@ -8,6 +6,7 @@ from database.app.inventory_operations import *
 
 def update_inventory(product_id, warehouse_id, new_quantity):
  return
+
 def check_inventory():
  #out of stock?
  return
