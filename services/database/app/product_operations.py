@@ -19,20 +19,6 @@ def add_product(product_name: str):
         session.close()
 
 
-def get_product(product_name: str):
-    """Fetch a product by name."""
-    session = get_session()
-    try:
-        product = session.query(Product).filter_by(product_name=product_name).first()
-        if not product:
-            print(f"No product found with name: {product_name}")
-        return product
-    except SQLAlchemyError as e:
-        print(f"Error fetching product: {e}")
-    finally:
-        session.close()
-
-
 def get_product_by_id(product_id: int):
     """Fetch a product by ID."""
     session = get_session()

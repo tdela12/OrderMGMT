@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text, MetaData, Table, Column, Integer, String, ForeignKey, Enum
+from sqlalchemy import create_engine, text, Column, Integer, String, ForeignKey, Enum
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 from utils.enums import Status
@@ -15,8 +15,10 @@ DATABASE_URL = (
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Product(Base):
     __tablename__ = "products"
