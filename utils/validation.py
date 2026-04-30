@@ -2,7 +2,7 @@ def validate_field(value, cast_type, field_name):
     try:
         return cast_type(value)
     except (ValueError, TypeError):
-        raise(f"{field_name} ({value!r}) is not valid")
+        raise (f"{field_name} ({value!r}) is not valid")
 
 
 def validate_order_details(_customer_id, _product_id, _quantity):

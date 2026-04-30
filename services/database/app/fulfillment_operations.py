@@ -67,5 +67,5 @@ def delete_warehouse(warehouse_id: int):
     except SQLAlchemyError as e:
         session.rollback()
         print(f'Error deleting warehouse: {e}')
-    finally: 
+    finally:
         session.close()
