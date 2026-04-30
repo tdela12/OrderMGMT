@@ -52,8 +52,8 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Install dependencies (api-gateway)
-        run: pip install -r services/api-gateway/requirements.txt
+      - name: Install dependencies (api_gateway)
+        run: pip install -r services/api_gateway/requirements.txt
 
       - name: Install dependencies (worker)
         run: pip install -r services/worker/requirements.txt
@@ -80,12 +80,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build api-gateway image
+      - name: Build api_gateway image
         uses: docker/build-push-action@v5
         with:
-          context: services/api-gateway
+          context: services/api_gateway
           push: false
-          tags: ordermgmt/api-gateway:${{ github.sha }}
+          tags: ordermgmt/api_gateway:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
