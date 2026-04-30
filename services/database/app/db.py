@@ -70,7 +70,7 @@ def get_session():
 def execute_query(query: str):
     """Execute a raw SQL query string."""
     try:
-        with engine.begin() as conn: 
+        with engine.begin() as conn:
             conn.execute(text(query))
         print("Query executed successfully.")
     except SQLAlchemyError as e:
