@@ -1,95 +1,84 @@
-import psycopg2
 import os
 from dotenv import load_dotenv
-from psycopg2 import OperationalError, errorcodes, errors
-import sys
+from sqlalchemy import create_engine, text, MetaData, Table, Column, Integer, String, ForeignKey, Enum
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
+from utils.enums import Status
 
 load_dotenv()
 
-conn = psycopg2.connect(
-    database = os.getenv("POSTGRES_DB"),
-    user = os.getenv("POSTGRES_USER"),
-    host = "localhost",
-    password = os.getenv("POSTGRES_PASSWORD"),
-    port = 5432,
+DATABASE_URL = (
+    f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}"
+    f"@localhost:5432/{os.getenv('POSTGRES_DB')}"
 )
 
-def print_psycopg2_exception(err):
-    # get details about the exception
-    err_type, err_obj, traceback = sys.exc_info()
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(bind=engine)
 
-    # get the line number when exception occured
-    line_num = traceback.tb_lineno
+class Base(DeclarativeBase):
+    pass
 
-    # print the connect() error
-    print ("\npsycopg2 ERROR:", err, "on line number:", line_num)
-    print ("psycopg2 traceback:", traceback, "-- type:", err_type)
+class Product(Base):
+    __tablename__ = "products"
 
-    # psycopg2 extensions.Diagnostics object attribute
-    print ("\nextensions.Diagnostics:", err.diag)
+    product_id = Column(Integer, primary_key=True, autoincrement=True)
+    product_name = Column(String(100))
 
-    # print the pgcode and pgerror exceptions
-    print ("pgerror:", err.pgerror)
-    print ("pgcode:", err.pgcode, "\n")
 
-def execute_query(query):
+class Warehouse(Base):
+    __tablename__ = "warehouses"
+
+    warehouse_id = Column(Integer, primary_key=True, autoincrement=True)
+    warehouse_address = Column(String(255), nullable=False)
+    warehouse_name = Column(String(255))
+
+
+class Customer(Base):
+    __tablename__ = "customers"
+
+    customer_id = Column(Integer, primary_key=True, autoincrement=True)
+    customer_name = Column(String(255), nullable=False)
+    customer_address = Column(String(255), nullable=False)
+
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    order_id = Column(Integer, primary_key=True, autoincrement=True)
+    customer_id = Column(Integer, ForeignKey("customers.customer_id"), nullable=False)
+    product_id = Column(Integer, ForeignKey("products.product_id"), nullable=False)
+    quantity = Column(Integer, nullable=False)
+    status = Column(Enum(Status), nullable=False)
+
+
+class Inventory(Base):
+    __tablename__ = "inventory"
+
+    inventory_id = Column(Integer, primary_key=True, autoincrement=True)
+    product_id = Column(Integer, ForeignKey("products.product_id"), nullable=False)
+    warehouse_id = Column(Integer, ForeignKey("warehouses.warehouse_id"), nullable=False)
+    quantity = Column(Integer, nullable=False)
+
+
+def get_session():
+    """Return a new database session."""
+    return SessionLocal()
+
+
+def execute_query(query: str):
+    """Execute a raw SQL query string."""
     try:
-        with conn.cursor() as cur:
-            cur.execute(query)
-        conn.commit()
-
-    except psycopg2.DatabaseError as e:
+        with engine.begin() as conn: 
+            conn.execute(text(query))
+        print("Query executed successfully.")
+    except SQLAlchemyError as e:
         print(f"Database error: {e}")
-        conn.rollback()
-    
-    print("Query executed successfully.")
+
 
 def create_tables():
-    commands = [
-        """
-        CREATE TABLE IF NOT EXISTS products(
-        product_id SERIAL PRIMARY KEY, 
-        product_name VARCHAR(100));
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS warehouses(
-        warehouse_id SERIAL PRIMARY KEY,
-        warehouse_address VARCHAR(255) NOT NULL, 
-        warehouse_name VARCHAR(255));
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS customers(
-        customer_id SERIAL PRIMARY KEY,
-        customer_name VARCHAR(255) NOT NULL,
-        customer_address VARCHAR(255) NOT NULL);
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS orders(
-        order_id SERIAL PRIMARY KEY,
-        customer_id INTEGER NOT NULL,
-        product_id INTEGER NOT NULL,
-        quantity INTEGER NOT NULL,
-        status VARCHAR(255) NOT NULL,
-        FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
-        FOREIGN KEY (product_id) REFERENCES products(product_id));
-        """,
-        """
-        CREATE TABLE IF NOT EXISTS inventory(
-        inventory_id SERIAL PRIMARY KEY,
-        product_id INTEGER NOT NULL,
-        warehouse_id INTEGER NOT NULL,
-        quantity INTEGER NOT NULL,
-        FOREIGN KEY (product_id) REFERENCES products(product_id),
-        FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id));
-        """
-    ]
+    """Create all tables defined in the ORM models."""
     try:
-        with conn.cursor() as cur:
-            for command in commands:
-                cur.execute(command)
-        conn.commit()
-
-    except psycopg2.DatabaseError as e:
-        print_psycopg2_exception(e)
-
-        conn.rollback()
+        Base.metadata.create_all(engine)
+        print("Tables created successfully.")
+    except SQLAlchemyError as e:
+        print(f"Error creating tables: {e}")

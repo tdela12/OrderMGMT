@@ -8,5 +8,6 @@ def update_inventory(product_id, warehouse_id, new_quantity):
  return
 
 def check_inventory():
+
  #out of stock?
  return

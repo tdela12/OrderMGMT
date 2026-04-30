@@ -6,11 +6,9 @@ def validate_field(value, cast_type, field_name):
     except (ValueError, TypeError):
         raise(f"{field_name} ({value!r}) is not valid")
 
-def validate_order_details(_customer_id, _product_id, _quantity, _status):
+def validate_order_details(_customer_id, _product_id, _quantity):
     validate_field(_customer_id, str, 'customer_id')
     validate_field(_product_id, str, 'product_id')
     validate_field(_quantity, int, 'quantity')
-    if not isinstance(_status, Status):
-        raise ValueError(f"Status ({_status!r}) is not valid")
     
 
