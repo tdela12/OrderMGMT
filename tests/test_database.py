@@ -1,11 +1,11 @@
 import pytest
 from sqlalchemy.exc import IntegrityError
 from services.database.app.db import Customer, Product, Warehouse, Order, Inventory
+from utils.enums import Status
 
 
-# ─────────────────────────────────────────────
-# CUSTOMER TESTS
-# ─────────────────────────────────────────────
+#Customer tests
+
 
 class TestCustomerCRUD:
 
@@ -32,7 +32,7 @@ class TestCustomerCRUD:
 
         updated = session.get(Customer, sample_customer.customer_id)
         assert updated.customer_name == "Alice Johnson"
-        assert updated.customer_address == "123 Main St"  # unchanged
+        assert updated.customer_address == "123 Main St"
 
     def test_update_customer_address(self, session, sample_customer):
         sample_customer.customer_address = "999 New Ave"
@@ -153,30 +153,30 @@ class TestOrderCRUD:
             customer_id=sample_customer.customer_id,
             product_id=sample_product.product_id,
             quantity=5,
-            status="pending"
+            status=Status.PENDING
         )
         session.add(order)
         session.flush()
 
         assert order.order_id is not None
         assert order.quantity == 5
-        assert order.status == "pending"
+        assert order.status == Status.PENDING
 
     def test_get_order(self, session, sample_order):
         fetched = session.get(Order, sample_order.order_id)
         assert fetched.quantity == 3
-        assert fetched.status == "pending"
+        assert fetched.status == Status.PENDING
 
     def test_get_order_not_found(self, session):
         result = session.get(Order, 99999)
         assert result is None
 
     def test_update_order_status(self, session, sample_order):
-        sample_order.status = "shipped"
+        sample_order.status = Status.SHIPPED
         session.flush()
 
         updated = session.get(Order, sample_order.order_id)
-        assert updated.status == "shipped"
+        assert updated.status == Status.SHIPPED
         assert updated.quantity == 3  # unchanged
 
     def test_update_order_quantity(self, session, sample_order):
@@ -200,7 +200,7 @@ class TestOrderCRUD:
                 customer_id=99999,
                 product_id=sample_product.product_id,
                 quantity=1,
-                status="pending"
+                status=Status.PENDING
             ))
             session.flush()
 
@@ -211,7 +211,7 @@ class TestOrderCRUD:
                 customer_id=sample_customer.customer_id,
                 product_id=99999,
                 quantity=1,
-                status="pending"
+                status=Status.PENDING
             ))
             session.flush()
 
@@ -224,7 +224,7 @@ class TestInventoryCRUD:
 
     def test_add_inventory(self, session, sample_product, sample_warehouse):
         inventory = Inventory(
-            product_id=sample_product.product_id,
+            product_id=sample_product.product_id, 
             warehouse_id=sample_warehouse.warehouse_id,
             quantity=200
         )

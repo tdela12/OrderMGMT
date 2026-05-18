@@ -3,15 +3,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
-from services.api_gateway.app import main  # adjust to your actual import path
-
-import os
-
+from services.api_gateway.app.main import app
 from services.database.app.db import Base, Customer, Product, Warehouse, Order, Inventory
-
-@pytest.fixture
-def client():
-    return TestClient(main)
+from utils.enums import Status
+import os
 
 load_dotenv()
 
@@ -20,10 +15,17 @@ DATABASE_URL = (
     f"@localhost:5432/{os.getenv('POSTGRES_DB')}"
 )
 
+@pytest.fixture
+def test_client():
+    return TestClient(app)
+
 
 @pytest.fixture(scope="session")
 def engine():
-    engine = create_engine(DATABASE_URL)
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"connect_timeout": 5}
+        )
     Base.metadata.create_all(engine)
     yield engine
     Base.metadata.drop_all(engine)
@@ -44,13 +46,11 @@ def session(engine):
     connection.close()
 
 
-# --- Reusable seed fixtures ---
-
 @pytest.fixture
 def sample_customer(session):
     customer = Customer(customer_name="Alice Smith", customer_address="123 Main St")
     session.add(customer)
-    session.flush()  # assigns customer_id without committing
+    session.flush()
     return customer
 
 
@@ -76,7 +76,7 @@ def sample_order(session, sample_customer, sample_product):
         customer_id=sample_customer.customer_id,
         product_id=sample_product.product_id,
         quantity=3,
-        status="pending"
+        status= Status.PENDING
     )
     session.add(order)
     session.flush()
