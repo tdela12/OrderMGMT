@@ -6,4 +6,3 @@ class Status(Enum):
     PENDING = 2
     DELIVERED = 3
     SHIPPED = 4
-    
