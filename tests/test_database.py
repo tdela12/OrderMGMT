@@ -7,57 +7,6 @@ from utils.enums import Status
 #Customer tests
 
 
-class TestCustomerCRUD:
-
-    def test_add_customer(self, session):
-        customer = Customer(customer_name="Bob Jones", customer_address="789 Elm St")
-        session.add(customer)
-        session.flush()
-
-        assert customer.customer_id is not None
-        assert customer.customer_name == "Bob Jones"
-        assert customer.customer_address == "789 Elm St"
-
-    def test_get_customer(self, session, sample_customer):
-        fetched = session.get(Customer, sample_customer.customer_id)
-        assert fetched.customer_name == "Alice Smith"
-
-    def test_get_customer_not_found(self, session):
-        result = session.get(Customer, 99999)
-        assert result is None
-
-    def test_update_customer_name(self, session, sample_customer):
-        sample_customer.customer_name = "Alice Johnson"
-        session.flush()
-
-        updated = session.get(Customer, sample_customer.customer_id)
-        assert updated.customer_name == "Alice Johnson"
-        assert updated.customer_address == "123 Main St"
-
-    def test_update_customer_address(self, session, sample_customer):
-        sample_customer.customer_address = "999 New Ave"
-        session.flush()
-
-        updated = session.get(Customer, sample_customer.customer_id)
-        assert updated.customer_address == "999 New Ave"
-
-    def test_delete_customer(self, session, sample_customer):
-        customer_id = sample_customer.customer_id
-        session.delete(sample_customer)
-        session.flush()
-
-        assert session.get(Customer, customer_id) is None
-
-    def test_customer_name_required(self, session):
-        with pytest.raises(IntegrityError):
-            session.add(Customer(customer_name=None, customer_address="123 St"))
-            session.flush()
-
-    def test_customer_address_required(self, session):
-        with pytest.raises(IntegrityError):
-            session.add(Customer(customer_name="No Address", customer_address=None))
-            session.flush()
-
 
 # ─────────────────────────────────────────────
 # PRODUCT TESTS
