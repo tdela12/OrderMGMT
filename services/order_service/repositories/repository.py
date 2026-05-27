@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from model import OrderModel
-from schema import Order
+from app.model import OrderModel
+from app.schema import Order
 from typing import List, Optional
 
 
